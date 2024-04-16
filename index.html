@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do List</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding: 20px;
+      }
+      .completed {
+        text-decoration: line-through;
+        color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center mb-4">To-Do List</h1>
+      <div class="row">
+        <div class="col-md-6 offset-md-3">
+          <form id="todo-form">
+            <div class="input-group mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="todo-input"
+                placeholder="Masukkan Tugas Baru"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Tambah</button>
+              </div>
+            </div>
+          </form>
+          <ul class="list-group" id="todo-list"></ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const todoForm = document.getElementById("todo-form");
+      const todoInput = document.getElementById("todo-input");
+      const todoList = document.getElementById("todo-list");
+
+      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+      function renderTasks() {
+        todoList.innerHTML = "";
+        tasks.forEach((task, index) => {
+          const li = document.createElement("li");
+          li.className =
+            "list-group-item d-flex justify-content-between align-items-center";
+          if (task.completed) {
+            li.classList.add("completed");
+          }
+          li.innerHTML = `
+         <span>${task.text}</span>
+         <div>
+           <button class="btn btn-sm btn-success mr-2 complete-btn" data-index="${index}">${
+            task.completed ? "Urung" : "Selesai"
+          }</button>
+           <button class="btn btn-sm btn-danger delete-btn" data-index="${index}">Hapus</button>
+         </div>
+       `;
+          todoList.appendChild(li);
+        });
+      }
+
+      function addTask(event) {
+        event.preventDefault();
+        const taskText = todoInput.value.trim();
+        if (taskText) {
+          const task = {
+            text: taskText,
+            completed: false,
+          };
+          tasks.push(task);
+          todoInput.value = "";
+          saveTasksToLocalStorage();
+          renderTasks();
+        }
+      }
+
+      function toggleTaskCompletion(index) {
+        tasks[index].completed = !tasks[index].completed;
+        saveTasksToLocalStorage();
+        renderTasks();
+      }
+
+      function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasksToLocalStorage();
+        renderTasks();
+      }
+
+      function saveTasksToLocalStorage() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      }
+
+      todoForm.addEventListener("submit", addTask);
+      todoList.addEventListener("click", (event) => {
+        const target = event.target;
+        const index = parseInt(target.dataset.index);
+        if (target.classList.contains("complete-btn")) {
+          toggleTaskCompletion(index);
+        } else if (target.classList.contains("delete-btn")) {
+          deleteTask(index);
+        }
+      });
+
+      renderTasks();
+    </script>
+  </body>
+</html>
